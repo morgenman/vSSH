@@ -4,6 +4,8 @@
 #+AUTHOR: Brian C. Ladd
 #+DATE: Fall 2021
 
+Git ReadMe:
+
 * Introduction
 Code to get started with for pVSSH-a.
 
@@ -43,3 +45,84 @@ build/readBy
 #+END_SRC
 
 If it takes commandline parameters, they come after the executable
+
+
+
+Documentation on site:
+
+* Overview
+Write a simple /shell/ program that reads and parses lines from standard output into separate words until the user terminates the program.
+
+* Shell Programs
+What does a shell program do? In a loop it:
+
+- Reads and parses each line
+  - breaks the line into words (non-blank characters)
+  - determines what executable command to run
+- Loads and runs the named executable
+  - the shell program is suspended, waiting for the child to finish
+
+This can, very generally, be divided into two parts: /parse/ and /execute/. In an effort to make this tractable, a very simple parser will be built first (phase a) and then it will be used to drive the execution code (phase b).
+
+
+
+* Very Simple SHell: VSSH-a
+** The Parser
+Two steps:
+- Prompt and read a full line into a string
+- Take the string apart into words
+
+(How would you do this in Java?)
+*** Prompt and Read
+~getline~ will read a line into a ~std::string~. It will evaluate as false if there is an error/EOF.
+
+http://cppreference.com (in case you were not using it) is the source for C++ documentation.
+
+*** Easy Parsing
+You /can/ scan the string by character and break it up yourself. This is not *easy*.
+
+~std::stringstream~ can be instantiated from a string and then standard reading functions (like ~>>~) can take it apart. You may want to use ~std::vector<std::string>~ since you do not know how many parameters there are to start with.
+
+You will need to take your array of paramaters and copy them into a null-terminated array (old, C-style array) of ~const char *~. The ~vshPrint~ function should be used for printing.
+
+** The Path
+The first parameter on the commandline is the *command*. It names (or should name) an executable file. If the command contains the '/' character, then it is a complete name (either absolute or relative). If it does not contain the '/' then an executable with that name must be searched for in the *PATH*.
+
+Normally the PATH is an environment variable. You will be using a hardcoded path with 4 directories in it:
+  .
+  /usr/local/bin
+  /usr/bin
+  /bin
+
+You will search for an executable in those directories in that order, stopping at the first you find.
+
+#+BEGIN_SRC vssh-a
+/home/laddbc> program-in-home-directory
+# /home/laddbc/program-in-home-directory is found (using std::filesystem).
+# The path is passed to stat which returns the executable bit set.
+exec(/home/laddbc/program-in-home-directory)
+program-in-home-directory
+
+/home/laddbc> ls abc def
+# find /home/laddbc/ls - FAIL
+# find /usr/local/bin/ls - FAIL
+# find /usr/bin/ls - FAIL
+# find /bin/ls - SUCCEED; stat path - it is executable
+exec(/bin/ls)
+ls abc def
+
+/home/laddbc> sl
+# find /home/laddbc/sl - FAIL
+# find /usr/local/bin/sl - FAIL
+# find /usr/bin/sl - FAIL
+# find /bin/sl - FAIL
+vssh-a: "sl" is an unknown command.
+/home/laddbc>
+#+END_SRC
+
+* C++ Library Objects:
+- =std::filesystem= has features for checking the existence of a file, directory, or device.
+- =std::stat= is a function that gives detailed status information about a file path.
+  - This includes whether or not it is marked "executable" and user access rights
+* Deliverables
+Standard C++ program directory with properly commented code and a README. Explain how you tested and what output I should expect.

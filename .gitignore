@@ -47,3 +47,4 @@ compile_commands.json
 .cache
 build
 *.dat
+.vscode/

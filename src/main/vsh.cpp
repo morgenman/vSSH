@@ -11,30 +11,36 @@
 using namespace std;
 namespace fs = std::filesystem;
 
+string getPath(string in);
+void getExec(fs::path path);
+
 vector<string> _path = {".", "/usr/local/bin", "/usr/bin", "/bin"};
 
 string getPath(string in) {
   string path = "";
+  fs::path p;
   for (auto dir : _path) {
-    fs::path p = dir.append("/").append(in);
+    p = dir.append("/").append(in);
 
     printf("checking %s\n", p.c_str());
 
     if (exists(p)) {
       printf("found %s in %s\n", in.c_str(), dir.c_str());
-
-      // TODO: Explain this
-      // https://stackoverflow.com/questions/5719694/how-to-check-if-file-is-executable-in-c
-      if (!access(p.c_str(), X_OK)) {
-        printf("file is marked as executable\n");
-      } else {
-        printf("file is marked as not executable\n");
-      }
-
+      getExec(p);
     } else {
     }
   }
   return p.string();
+}
+
+void getExec(fs::path path) {
+  // TODO: Explain this
+  // https://stackoverflow.com/questions/5719694/how-to-check-if-file-is-executable-in-c
+  if (!access(path.c_str(), X_OK)) {
+    printf("file is marked as executable\n");
+  } else {
+    printf("file is marked as not executable\n");
+  }
 }
 
 /**

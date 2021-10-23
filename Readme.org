@@ -1,0 +1,45 @@
+#+STARTUP: showall
+#+TITLE: Implementing VSSH-a
+#+SUBTITLE: CIS 310: Operating Systems
+#+AUTHOR: Brian C. Ladd
+#+DATE: Fall 2021
+
+* Introduction
+Code to get started with for pVSSH-a.
+
+* User Interface
+<You fill this part in!>
+
+* How the Code was Tested
+<How do you know the path search works?>
+<How do you know the stringstream >> next code works to take apart a line of input?>
+
+* To Clean
+Removes all compiled files so that the next compilation will be complete rather than
+incremental.
+#+BEGIN_SRC shell
+make clean
+#+END_SRC
+
+* To Compile
+#+BEGIN_SRC shell
+make
+#+END_SRC
+
+* To Test
+To keep them simple to read, this project has no tests.
+
+* To Run
+Each project, when built, shows the name of the executable as the parameter of the -o commandline argument. So, in TextFileReading, the commandline make uses is
+#+BEGIN_SRC shell
+g++ -std=c++17 -Wall -Werror -g  -o build/readBy ...
+#+END_SRC
+
+This tells you that the executable is build in =./build/readBy=. The executable is named in the =Makefile=; the source file containing the =main= function is in =src/main/=.
+
+To run the program, type its path at the commandline
+#+BEGIN_SRC shell
+build/readBy
+#+END_SRC
+
+If it takes commandline parameters, they come after the executable

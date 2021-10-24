@@ -15,6 +15,7 @@ fs::path getPath(string in);
 fs::path getPath(string in, int index);
 bool getExec(fs::path path);
 bool run(string in);
+vector<string> parse(string in);
 
 vector<string> _path = {".", "/usr/local/bin", "/usr/bin", "/bin"};
 
@@ -22,8 +23,12 @@ fs::path getPath(string in) {
   fs::path p;
   for (size_t i = 0; i < _path.size(); i++) {
     p = getPath(in, (int)i);
-    if (p.string() != "$")
-      if (getExec(p)) return p;
+    if (p.string() != "$") {
+      if (getExec(p))
+        return p;
+      else
+        p = "$";
+    }
   }
   return p;
 }
@@ -41,12 +46,10 @@ fs::path getPath(string in, int index) {
   fs::path p = "$";
   int i = 0;
   for (auto dir : _path) {
+    printf("checking %s/%s\n", dir.c_str(), in.c_str());
     if (p.string() == "$" && i == index) p = dir.append("/").append(in);
-
-    printf("checking %s\n", p.c_str());
-
     if (exists(p)) {
-      printf("found %s in %s\n", in.c_str(), dir.c_str());
+      printf("%s exists\n", dir.c_str());
       i++;
     } else
       p = "$";
@@ -67,30 +70,39 @@ bool getExec(fs::path path) {
 }
 
 bool run(string in) {
-  fs::path path = getPath(in);
-  if (path == "$") {
+  vector<string> arguments = parse(in);
+  fs::path p = getPath(arguments.front());
+  if (p == "$") {
     printf("Error, no executables found for %s\n", in.c_str());
-  } else if (getExec(path)) {
   } else {
-    printf("Error, file is not marked as executable\n");
+    const char **args = new const char *[3];
+    vshPrint(p.c_str(), arguments.front().c_str(), args);
   }
   return false;
+}
+
+/**
+ * TODO: explain:
+ * https://www.geeksforgeeks.org/split-a-sentence-into-words-in-cpp/
+ *
+ * @param  {string} in       :
+ * @return {vector<string>}  :
+ */
+vector<string> parse(string in) {
+  vector<string> out;
+  istringstream ss(in);
+  string temp;
+  while (ss >> temp) {
+    out.push_back(temp);
+  }
+  return out;
 }
 
 /**
  * main program
  */
 int main(int argc, char *argv[]) {
-  string cmd = "ls";
-  fs::path path = getPath("ls");
 
-  string p1 = "lepton";
-  string p2 = "meson";
+  run("ls /testing wow");
 
-  const char **p = new const char *[3];
-  p[0] = p1.c_str();
-  p[1] = p2.c_str();
-  p[2] = nullptr;
-  vshPrint(path.c_str(), cmd.c_str(), p);
-  delete[] p;
 }

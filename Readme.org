@@ -3,7 +3,7 @@ Very Simple Shell Part A
 
 * User Interface
 For now, I don't have any help function or welcome message to inform the user of
-the options. To 
+the options. 
 
 * How the Code was Tested
 I was going to use catch2, but there is simply no point. 

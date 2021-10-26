@@ -11,5 +11,5 @@ void vshPrint(const char *cmd_FullPath, const char *cmd,
   for (const char **pp = parameters; *pp; pp++) {
     cout << " " << *pp;
   }
-  cout << endl;
+  // cout << endl;
 }

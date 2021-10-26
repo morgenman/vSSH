@@ -1,20 +1,35 @@
-#+STARTUP: showall
-#+TITLE: Implementing VSSH-a
-#+SUBTITLE: CIS 310: Operating Systems
-#+AUTHOR: Brian C. Ladd
-#+DATE: Fall 2021
-
-Git ReadMe:
-
 * Introduction
-Code to get started with for pVSSH-a.
+Very Simple Shell Part A
 
 * User Interface
-<You fill this part in!>
+For now, I don't have any help function or welcome message to inform the user of
+the options. To 
 
 * How the Code was Tested
-<How do you know the path search works?>
-<How do you know the stringstream >> next code works to take apart a line of input?>
+I was going to use catch2, but there is simply no point. 
+There are no edge casesto test at this stage. 
+We simply have to ensure:
+1. it finds files that are executable in path
+2. it passes through arguments rights
+
+Expected output for ls
+#+BEGIN_SRC c++
+> ls
+exec(/usr/bin/ls)
+ls
+> ls hello
+exec(/usr/bin/ls)
+ls hello
+> ls hello world
+exec(/usr/bin/ls)
+ls hello world
+#+END_SRC
+
+To see more info type trace. 
+
+assuming ls is in the same location on your machine you simply need to run
+./build/vssh and compare the output with above. 
+
 
 * To Clean
 Removes all compiled files so that the next compilation will be complete rather than
@@ -28,25 +43,12 @@ make clean
 make
 #+END_SRC
 
-* To Test
-To keep them simple to read, this project has no tests.
 
 * To Run
 Each project, when built, shows the name of the executable as the parameter of the -o commandline argument. So, in TextFileReading, the commandline make uses is
 #+BEGIN_SRC shell
-g++ -std=c++17 -Wall -Werror -g  -o build/readBy ...
+g++ -std=c++17 -Wall -Werror -g  -o build/vssh
 #+END_SRC
-
-This tells you that the executable is build in =./build/readBy=. The executable is named in the =Makefile=; the source file containing the =main= function is in =src/main/=.
-
-To run the program, type its path at the commandline
-#+BEGIN_SRC shell
-build/readBy
-#+END_SRC
-
-If it takes commandline parameters, they come after the executable
-
-
 
 Documentation on site:
 

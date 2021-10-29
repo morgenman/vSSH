@@ -67,7 +67,8 @@ fs::path getPath(string in) {
       // If not executable, try again
       else
         p = "$";
-    }
+    } else if (i == 0)
+      break;
   }
   return p;
 }
@@ -93,15 +94,15 @@ fs::path getPath(string in, int index) {
     if (trace) printf("checking %s/%s\n", dir.c_str(), in.c_str());
     // If this is the first string, and we are at the index, set p
     temp = dir.append("/").append(in);
-    if (p.string() == "$" && i == index) p = temp;
     // exists() takes in a path, sees if the file exists
     if (exists(temp)) {
+      if (p.string() == "$" && i == index) p = temp;
       if (trace) printf("%s exists\n", dir.c_str());
+      if (trace) printf("p:[%s]\n", p.c_str());
       // I could probably return here, but .. well I don't want to break
       // anything
       i++;
-    } else
-      p = "$";
+    }
   }
   return p;
 }

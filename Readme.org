@@ -1,5 +1,5 @@
 * Introduction
-Very Simple Shell Part A
+Very Simple Shell
 
 * User Interface
 For now, I don't have any help function or welcome message to inform the user of

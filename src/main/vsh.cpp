@@ -16,11 +16,13 @@
  * @due 10/25/2021
  */
 
+#include <stdlib.h>
 #include <unistd.h>
 
 #include <cstring>
 #include <filesystem>
 #include <iostream>
+#include <regex>
 #include <string>
 #include <vector>
 
@@ -187,6 +189,12 @@ vector<string> parse(string in) {
   }
   return out;
 }
+string updatePath() {
+  string prompt = "\n";
+  prompt.append(fs::current_path().string());
+  prompt.append(">");
+  return prompt;
+}
 
 /**
  * Main, implements user input loop and quit() catching. Also contains trace
@@ -195,7 +203,7 @@ vector<string> parse(string in) {
 int main(int argc, char *argv[]) {
   // User input prompt
   // TODO replace this with path and user info
-  string prompt = "\n> ";
+  string prompt = updatePath();
   string line;
   printf("%s", prompt.c_str());
 
@@ -225,6 +233,22 @@ int main(int argc, char *argv[]) {
         trace = true;
         continue;
       }
+    }
+    if (cmd == "cd") {
+      string home = getenv("HOME");
+      home.append("/");
+      string p = home;
+      if (entered >> cmd) {
+        if (cmd.find("~") != std::string::npos) {
+          cmd = std::regex_replace(cmd, std::regex("~"), home);
+        }
+        fs::current_path((fs::path)cmd);
+      } else
+        fs::current_path((fs::path)home);
+
+      prompt = updatePath();
+      printf("%s", prompt.c_str());
+      continue;
     }
     // Run the command
     run(in);

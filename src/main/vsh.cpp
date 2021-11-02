@@ -150,11 +150,13 @@ void run(string in) {
     // Essentially it's iterating over into a vector holding <char*>
     // TODO: investigate if switching from vector<string> globally makes sense
 
-    vector<char *> cstrings;
+    vector<const char *> cstrings;
     // Preallocating memory
     cstrings.reserve(arguments.size());
     for (size_t i = 1; i < arguments.size(); ++i)
       cstrings.push_back(const_cast<char *>(arguments[i].c_str()));
+
+    cstrings.push_back(nullptr);
 
     // if not empty, pass through to ladd's function.
     // For cstrings, give the address of the first element, casted to const
@@ -162,8 +164,7 @@ void run(string in) {
     // This is super weird but works because we reserved memory a few lines up
     // TODO: see if we need to deallocate that memory
     if (!cstrings.empty())
-      vshPrint(p.c_str(), arguments.front().c_str(),
-               (const char **)&cstrings[0]);
+      vshPrint(p.c_str(), arguments.front().c_str(), cstrings.data());
 
     else
       vshPrint(p.c_str(), arguments.front().c_str(), args);

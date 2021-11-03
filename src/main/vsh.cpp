@@ -218,6 +218,7 @@ string chomper() {
   int iter = (int)history.size();
   int max = iter;
   string buffer;
+  string temp;
   while ((c = getchar()) != '\r') {
     buffer = "";
     if (c == '\n') break;
@@ -243,6 +244,9 @@ string chomper() {
           backspace();
         } else if (c == 65) {  // up
           if (iter > 0) {
+            if (iter == max) {
+              temp = out;
+            }
             iter--;
             buffer = history.at(iter);
           }
@@ -253,7 +257,9 @@ string chomper() {
           } else if (iter == max - 1) {
             iter++;
             backspace(out.size());
+            buffer = temp;
             out = "";
+            temp = "";
             i = 0;
           }
         } else if (c == 68) {  // left

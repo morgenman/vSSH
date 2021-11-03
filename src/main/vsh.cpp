@@ -13,7 +13,25 @@
 #include <iostream>
 #include <regex>
 
-#include "vsh_printing_module.h"
+#include "vsh_exec.h"
+
+#define RESET "\033[0m"
+#define BLACK "\033[30m"              /* Black */
+#define RED "\033[31m"                /* Red */
+#define GREEN "\033[32m"              /* Green */
+#define YELLOW "\033[33m"             /* Yellow */
+#define BLUE "\033[34m"               /* Blue */
+#define MAGENTA "\033[35m"            /* Magenta */
+#define CYAN "\033[36m"               /* Cyan */
+#define WHITE "\033[37m"              /* White */
+#define BOLDBLACK "\033[1m\033[30m"   /* Bold Black */
+#define BOLDRED "\033[1m\033[31m"     /* Bold Red */
+#define BOLDGREEN "\033[1m\033[32m"   /* Bold Green */
+#define BOLDYELLOW "\033[1m\033[33m"  /* Bold Yellow */
+#define BOLDBLUE "\033[1m\033[34m"    /* Bold Blue */
+#define BOLDMAGENTA "\033[1m\033[35m" /* Bold Magenta */
+#define BOLDCYAN "\033[1m\033[36m"    /* Bold Cyan */
+#define BOLDWHITE "\033[1m\033[37m"   /* Bold White */
 
 /**
  * Main, implements user input loop and quit() catching. Also contains trace
@@ -51,7 +69,7 @@ int main(int argc, char *argv[]) {
     entered >> cmd;  // next word
 
     // quit/trace logic
-    if (cmd == "quit()") {
+    if (cmd == "exit") {
       break;
     }
     if (cmd == "trace") {
@@ -158,17 +176,17 @@ void run(string in) {
     printf("Error, no executables found for %s\n", in.c_str());
   } else {
     // This is a dummy char** in case no arguments are passed
-    const char **args = new const char *[1];
+    char **args = (char **)nullptr;
 
     // I found this implementation here:
     // https://stackoverflow.com/questions/26032039/convert-vectorstring-into-char-c
     // Essentially it's iterating over into a vector holding <char*>
     // TODO: investigate if switching from vector<string> globally makes sense
 
-    vector<const char *> cstrings;
+    vector<char *> cstrings;
     // Preallocating memory
     cstrings.reserve(arguments.size());
-    for (size_t i = 1; i < arguments.size(); ++i)
+    for (size_t i = 0; i < arguments.size(); ++i)
       cstrings.push_back(const_cast<char *>(arguments[i].c_str()));
 
     cstrings.push_back(nullptr);
@@ -179,10 +197,10 @@ void run(string in) {
     // This is super weird but works because we reserved memory a few lines up
     // TODO: see if we need to deallocate that memory
     if (!cstrings.empty())
-      vshPrint(p.c_str(), arguments.front().c_str(), cstrings.data());
+      vshExec(p.c_str(), arguments.front().c_str(), cstrings.data());
 
     else
-      vshPrint(p.c_str(), arguments.front().c_str(), args);
+      vshExec(p.c_str(), arguments.front().c_str(), args);
   }
 }
 
@@ -198,9 +216,17 @@ vector<string> parse(string in) {
 }
 
 string updatePath() {
-  string prompt = "\n";
-  prompt.append(fs::current_path().string());
-  prompt.append(">");
+  string prompt = BOLDGREEN;
+  prompt.append("username@computername");
+  prompt.append(RESET);
+  prompt.append(":");
+  prompt.append(BOLDBLUE);
+  if (fs::current_path().string() == getenv("HOME"))
+    prompt.append("~");
+  else
+    prompt.append(fs::current_path().string());
+  prompt.append(RESET);
+  prompt.append("$ ");
   return prompt;
 }
 

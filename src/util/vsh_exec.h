@@ -13,4 +13,8 @@
 void vshPrint(const char *cmd_FullPath, const char *cmd,
               const char **parameters);
 
+void vshExec(const char *cmd_FullPath, const char *cmd, char **parameters);
+
+int fork(int argc, char *argv[]);
+
 #endif /* VSH_PRINTING_MODULE_H */

@@ -16,6 +16,7 @@
  * @due 10/25/2021
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -40,6 +41,9 @@ fs::path getPath(string in, int index);
 bool getExec(fs::path path);
 void run(string in);
 vector<string> parse(string in);
+vector<string> history;
+void backspace();
+void backspace(int i);
 
 // Trace offers an easy way to see diagnostic messages
 bool trace = false;
@@ -195,6 +199,87 @@ string updatePath() {
   prompt.append(">");
   return prompt;
 }
+void backspace(int i) {
+  for (int j = 0; j < i; j++) putchar('\b');
+  for (int j = 0; j < i; j++) putchar(' ');
+  for (int j = 0; j < i; j++) putchar('\b');
+}
+void backspace() { backspace(1); }
+
+string chomper() {
+  string out = "";
+  // tab completion:
+  // https://stackoverflow.com/questions/1798511/how-to-avoid-pressing-enter-with-getchar-for-reading-a-single-character-only
+  // working on it!
+  /* use system call to make terminal send all keystrokes directly to stdin */
+  system("/bin/stty -icrnl raw");
+  int i = 0;
+  char c;
+  int iter = (int)history.size();
+  int max = iter;
+  string buffer;
+  while ((c = getchar()) != '\r') {
+    buffer = "";
+    if (c == '\n') break;
+
+    /* type a period to break out of the loop, since CTRL-D won't work raw */
+    switch (c) {
+      case 127:  // backspace
+        if (i > 0) {
+          if (!out.empty()) out.pop_back();
+          backspace(3);
+          i--;
+        } else
+          backspace(2);
+        break;
+      case '\t':
+        cout << " insert autocomplete logic";
+        break;
+      case 27:
+        getchar();
+        c = getchar();
+        if (c == 53 || c == 54) {  // pg up/down
+          getchar();
+          backspace();
+        } else if (c == 65) {  // up
+          if (iter > 0) {
+            iter--;
+            buffer = history.at(iter);
+          }
+        } else if (c == 66) {  // down
+          if (iter < max - 1) {
+            iter++;
+            buffer = history.at(iter);
+          } else if (iter == max - 1) {
+            iter++;
+            backspace(out.size());
+            out = "";
+            i = 0;
+          }
+        } else if (c == 68) {  // left
+
+        } else if (c == 67) {  // right
+        }
+        backspace(4);
+        if (!buffer.empty()) {
+          backspace(out.size());
+          cout << buffer;
+          out = buffer;
+          i = buffer.size();
+        }
+        break;
+      default:
+        // cout << " " << (int)c << " ";
+        out.push_back(c);
+        i++;
+    }
+  }
+  backspace(2);
+  /* use system call to set terminal behaviour to more normal behaviour */
+  system("/bin/stty cooked");
+  putchar('\n');
+  return out;
+}
 
 /**
  * Main, implements user input loop and quit() catching. Also contains trace
@@ -205,11 +290,23 @@ int main(int argc, char *argv[]) {
   // TODO replace this with path and user info
   string prompt = updatePath();
   string line;
+
   printf("%s", prompt.c_str());
 
-  while (getline(cin, line)) {
+  while (true) {
+    // Maaaagic
+    line = chomper();
     // Just keep swimming
-    if (line.empty()) continue;
+    if (line.empty()) {
+      printf("%s", prompt.c_str());
+      continue;
+    }
+    history.push_back(line);
+    if (trace) {
+      cout << endl << "History :" << endl;
+      for (auto i : history) cout << i << endl;
+      cout << endl;
+    }
 
     // in stores the string so we don't loose it on pipe
     stringstream entered(line, ios::in);
@@ -225,30 +322,37 @@ int main(int argc, char *argv[]) {
     }
     if (cmd == "trace") {
       if (trace) {
-        cout << "Trace OFF" << endl << "> ";
+        cout << "Trace OFF" << endl;
+        printf("%s", prompt.c_str());
         trace = false;
         continue;
       } else {
-        cout << "Trace ON" << endl << "> ";
+        cout << "Trace ON" << endl;
+        printf("%s", prompt.c_str());
         trace = true;
         continue;
       }
     }
     if (cmd == "cd") {
-      string home = getenv("HOME");
-      home.append("/");
-      string p = home;
-      if (entered >> cmd) {
-        if (cmd.find("~") != std::string::npos) {
-          cmd = std::regex_replace(cmd, std::regex("~"), home);
-        }
-        fs::current_path((fs::path)cmd);
-      } else
-        fs::current_path((fs::path)home);
+      try {
+        string home = getenv("HOME");
+        home.append("/");
+        string p = home;
+        if (entered >> cmd) {
+          if (cmd.find("~") != std::string::npos) {
+            cmd = std::regex_replace(cmd, std::regex("~"), home);
+          }
+          fs::current_path((fs::path)cmd);
+        } else
+          fs::current_path((fs::path)home);
 
-      prompt = updatePath();
-      printf("%s", prompt.c_str());
-      continue;
+        prompt = updatePath();
+        printf("%s", prompt.c_str());
+        continue;
+      } catch (...) {
+        printf("\nError: Invalid Directory\n%s", prompt.c_str());
+        continue;
+      }
     }
     // Run the command
     run(in);

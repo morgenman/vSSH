@@ -4,6 +4,7 @@
 
 #include "vsh.h"
 
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -15,31 +16,20 @@
 
 #include "vsh_exec.h"
 
-#define RESET "\033[0m"
-#define BLACK "\033[30m"              /* Black */
-#define RED "\033[31m"                /* Red */
-#define GREEN "\033[32m"              /* Green */
-#define YELLOW "\033[33m"             /* Yellow */
-#define BLUE "\033[34m"               /* Blue */
-#define MAGENTA "\033[35m"            /* Magenta */
-#define CYAN "\033[36m"               /* Cyan */
-#define WHITE "\033[37m"              /* White */
-#define BOLDBLACK "\033[1m\033[30m"   /* Bold Black */
-#define BOLDRED "\033[1m\033[31m"     /* Bold Red */
-#define BOLDGREEN "\033[1m\033[32m"   /* Bold Green */
-#define BOLDYELLOW "\033[1m\033[33m"  /* Bold Yellow */
-#define BOLDBLUE "\033[1m\033[34m"    /* Bold Blue */
-#define BOLDMAGENTA "\033[1m\033[35m" /* Bold Magenta */
-#define BOLDCYAN "\033[1m\033[36m"    /* Bold Cyan */
-#define BOLDWHITE "\033[1m\033[37m"   /* Bold White */
-
 /**
  * Main, implements user input loop and quit() catching. Also contains trace
  * logic
  */
 int main(int argc, char *argv[]) {
   // User input prompt
-  // TODO replace this with path and user info
+  gethostname(hostname, HOST_NAME_MAX);
+
+  // getlogin_r(username, LOGIN_NAME_MAX);
+  username = "";
+  username.append(getenv("HOME"));
+
+  username = username.erase(0, username.find_last_of("/") + 1);
+
   string prompt = updatePath();
   string line;
 
@@ -217,12 +207,22 @@ vector<string> parse(string in) {
 
 string updatePath() {
   string prompt = BOLDGREEN;
-  prompt.append("username@computername");
+
+  prompt.append(username);
+  prompt.append("@");
+  prompt.append((char *)&hostname);
   prompt.append(RESET);
   prompt.append(":");
   prompt.append(BOLDBLUE);
-  if (fs::current_path().string() == getenv("HOME"))
+  string temp = fs::current_path().string();
+  string temp2 = getenv("HOME");
+  if (temp.find(temp2) == 0) {
+    temp.erase(0, temp2.size());
     prompt.append("~");
+    prompt.append(temp);
+  }
+  // if (fs::current_path().string() == getenv("HOME"))
+  // prompt.append("~");
   else
     prompt.append(fs::current_path().string());
   prompt.append(RESET);

@@ -9,7 +9,6 @@
 
 using namespace std;
 
-
 void vshPrint(const char *cmd_FullPath, const char *cmd,
               const char **parameters) {
   cout << "exec(" << cmd_FullPath << ")" << endl;

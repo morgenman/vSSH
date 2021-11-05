@@ -92,7 +92,8 @@ int main(int argc, char *argv[]) {
         printf("%s", prompt.c_str());
         continue;
       } catch (...) {
-        printf("\nError: Invalid Directory\n%s", prompt.c_str());
+        printf("-cash: %s: No such file or directory\n%s", in.c_str(),
+               prompt.c_str());
         continue;
       }
     }
@@ -237,6 +238,15 @@ void backspace(int i) {
 }
 void backspace() { backspace(1); }
 
+void restore(int amount, int index, string origin) {
+  for (int i = 0; i < amount; i++) {
+    if ((int)origin.size() > index + i) putchar(origin.at(index + i));
+  }
+  for (int i = 0; i < amount; i++) {
+    if ((int)origin.size() > index + i) putchar('\b');
+  }
+}
+
 string chomper() {
   string out = "";
   // tab completion:
@@ -249,19 +259,26 @@ string chomper() {
   int iter = (int)history.size();
   int max = iter;
   string buffer, temp;
+  string keycode;
   while ((c = getchar()) != '\r') {
+    keycode.append(" ");
+    keycode.append(std::to_string((int)c));
+    keycode.append(" ");
+
     buffer = "";
     if (c == '\n') break;
     /* type a period to break out of the loop, since CTRL-D won't work raw */
     switch (c) {
       case 127:  // backspace
-
         if (i > 0) {
-          if (!out.empty()) out.pop_back();
+          if (!out.empty()) out.erase(i - 1, 1);
           backspace(3);
           i--;
-        } else
+          restore(out.size() - i + 2, i, out + " ");
+        } else {
           backspace(2);
+          restore(2, i, out);
+        }
         break;
 
       case '\t':
@@ -270,9 +287,15 @@ string chomper() {
       case 27:
         getchar();
         c = getchar();
+
         if (c == 53 || c == 54) {  // pg up/down
           getchar();
           backspace();
+
+        } else if (c == 51) {  // delete
+          getchar();
+          backspace();
+          if (!out.empty()) out.erase(i, 1);
         } else if (c == 65) {  // up
           if (iter > 0) {
             if (iter == max) {
@@ -295,44 +318,18 @@ string chomper() {
           }
         } else if (c == 68) {  // left
           backspace(4);
-          if ((int)out.size() > i) {
-            putchar(out.at(i));
-            if ((int)out.size() > i + 1) {
-              putchar(out.at(i + 1));
-              if ((int)out.size() > i + 2) {
-                putchar(out.at(i + 2));
-                if ((int)out.size() > i + 3) {
-                  putchar(out.at(i + 3));
-                  putchar('\b');
-                }
-                putchar('\b');
-              }
-              putchar('\b');
-            }
-            putchar('\b');
-          }
+          restore(4, i, out);
+
           if (i > 0) {
             putchar('\b');
             i--;
           }
           break;
-
         } else if (c == 67) {  // right
           backspace(4);
           if ((int)out.size() > i) {
             putchar(out.at(i));
-            if ((int)out.size() > i + 1) {
-              putchar(out.at(i + 1));
-              if ((int)out.size() > i + 2) {
-                putchar(out.at(i + 2));
-                if ((int)out.size() > i + 3) {
-                  putchar(out.at(i + 3));
-                  putchar('\b');
-                }
-                putchar('\b');
-              }
-              putchar('\b');
-            }
+            restore(3, i + 1, out);
             // putchar('\b');
           }
           if (i < (int)out.size()) {
@@ -340,7 +337,9 @@ string chomper() {
           }
           break;
         }
+
         backspace(4);
+        restore(6, i, out);
         if (!buffer.empty()) {
           backspace(out.size());
           cout << buffer;
@@ -350,7 +349,6 @@ string chomper() {
         break;
       default:
 
-        // cout << " " << (int)c << " ";
         out.insert(i, 1, c);
         i++;
         if (i < (int)out.size() - 1) {
@@ -375,5 +373,6 @@ string chomper() {
   /* use system call to set terminal behaviour to more normal behaviour */
   system("/bin/stty cooked");
   putchar('\n');
+  if (trace) cout << "keys pressed: " << keycode << endl;
   return out;
 }

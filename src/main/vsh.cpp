@@ -314,7 +314,7 @@ string chomper() {
         break;
 
       case '\t':
-        cout << " insert autocomplete logic";
+        // cout << " insert autocomplete logic";
         break;
       case 27:
         getchar();

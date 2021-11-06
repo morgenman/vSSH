@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
 
   username = username.erase(0, username.find_last_of("/") + 1);
 
-  string prompt = updatePath();
+  prompt = updatePath();
   string line;
 
   printf("%s", prompt.c_str());
@@ -50,58 +50,60 @@ int main(int argc, char *argv[]) {
       cout << endl;
     }
 
-    // in stores the string so we don't loose it on pipe
-    stringstream entered(line, ios::in);
-    string in = entered.str();
-    string cmd;
+    if (processCommand(line) == -1) return 0;
 
-    // pipe first word to command for quit/trace logic
-    entered >> cmd;  // next word
-
-    // quit/trace logic
-    if (cmd == "exit") {
-      break;
-    }
-    if (cmd == "trace") {
-      if (trace) {
-        cout << "Trace OFF" << endl;
-        printf("%s", prompt.c_str());
-        trace = false;
-        continue;
-      } else {
-        cout << "Trace ON" << endl;
-        printf("%s", prompt.c_str());
-        trace = true;
-        continue;
-      }
-    }
-    if (cmd == "cd") {
-      try {
-        string home = getenv("HOME");
-        home.append("/");
-        string p = home;
-        if (entered >> cmd) {
-          if (cmd.find("~") != std::string::npos) {
-            cmd = std::regex_replace(cmd, std::regex("~"), home);
-          }
-          fs::current_path((fs::path)cmd);
-        } else
-          fs::current_path((fs::path)home);
-
-        prompt = updatePath();
-        printf("%s", prompt.c_str());
-        continue;
-      } catch (...) {
-        printf("-cash: %s: No such file or directory\n%s", in.c_str(),
-               prompt.c_str());
-        continue;
-      }
-    }
-    // Run the command
-    run(in);
     // Print prompt again
     printf("%s", prompt.c_str());
   }
+  return 0;
+}
+
+int processCommand(string line) {
+  string home = getenv("HOME");
+  home.append("/");
+  while (line.find("~") != std::string::npos) {
+    line = std::regex_replace(line, std::regex("~"), home);
+  }
+  // in stores the string so we don't loose it on pipe
+  stringstream entered(line, ios::in);
+  string in = entered.str();
+  string cmd;
+
+  // pipe first word to command for quit/trace logic
+  entered >> cmd;  // next word
+
+  // quit/trace logic
+  if (cmd == "exit") {
+    return -1;
+  } else if (cmd == "trace") {
+    if (trace)
+      cout << "Trace OFF" << endl;
+    else
+      cout << "Trace ON" << endl;
+    trace = !trace;
+  } else if (cmd == "cd") {
+    try {
+      string p = home;
+      if (entered >> cmd) {
+        fs::current_path((fs::path)cmd);
+      } else
+        fs::current_path((fs::path)home);
+
+      prompt = updatePath();
+      // printf("%s", prompt.c_str());
+      // continue;
+    } catch (...) {
+      printf("-cash: %s: No such file or directory\n", in.c_str());
+      // continue;
+    }
+  } else if (cmd == "pwd") {  // NOTE: might not be necessary, /usr/bin/pwd
+                              // exists on my device
+    cout << fs::current_path().string().c_str() << endl;
+  } else if (alias.find(cmd) != alias.end()) {
+    in = regex_replace(in, regex(cmd), alias[cmd]);
+    executeFile(in);  // Run the command
+  } else
+    executeFile(in);  // Run the command
   return 0;
 }
 
@@ -157,15 +159,52 @@ bool getExec(fs::path path) {
   }
 }
 
-void run(string in) {
+void executeFile(string in) {
   // arguments is a vector of strings, each string holding a word
   vector<string> arguments = parse(in);
+  bool pos = false;
+  int redir = 0;  // 1:< 2:> 3:>>
+  for (int i = 0; i < (int)arguments.size(); i++) {
+    pos = (i == (int)arguments.size() - 2);
+    if (arguments[i] == "<") {
+      if (pos)
+        redir = 1;
+      else
+        redir = -1;
+    } else if (arguments[i] == ">") {
+      if (pos)
+        redir = 2;
+      else
+        redir = -1;
+    } else if (arguments[i] == ">>") {
+      if (pos)
+        redir = 3;
+      else
+        redir = -1;
+    }
+  }
   // p stores the path of the command once found on the system
   fs::path p = getPath(arguments.front());
   if (p == "$") {
     // $ is the return when no executable matches are found
     printf("Error, no executables found for %s\n", in.c_str());
   } else {
+    string fn = "";
+    switch (redir) {
+      case -1:
+        cout << BOLDRED
+             << "WARNING: invalid redirect usage detected. May result in "
+                "unexpected behavior."
+             << RESET << endl;
+        break;
+      case 1:
+      case 2:
+      case 3:
+        fn = arguments[(int)arguments.size() - 1];
+        arguments.resize(arguments.size() - 2);
+        break;
+    }
+
     // This is a dummy char** in case no arguments are passed
     char **args = (char **)nullptr;
 
@@ -188,10 +227,10 @@ void run(string in) {
     // This is super weird but works because we reserved memory a few lines up
     // TODO: see if we need to deallocate that memory
     if (!cstrings.empty())
-      vshExec(p.c_str(), arguments.front().c_str(), cstrings.data());
+      vshExec(redir, fn, p.c_str(), cstrings.data());
 
     else
-      vshExec(p.c_str(), arguments.front().c_str(), args);
+      vshExec(redir, fn, p.c_str(), args);
   }
 }
 
@@ -339,7 +378,7 @@ string chomper() {
         }
 
         backspace(4);
-        restore(6, i, out);
+        restore(6, i, out + " ");
         if (!buffer.empty()) {
           backspace(out.size());
           cout << buffer;

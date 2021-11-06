@@ -19,6 +19,7 @@
 #include <limits.h>
 
 #include <filesystem>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -48,16 +49,28 @@ vector<string> history;
 bool trace = false;
 // Storing the path as a vector allows it to have directories added and removed
 vector<string> _path = {".", "/usr/local/bin", "/usr/bin", "/bin"};
+map<string, string> alias = {{"egrep", "egrep --color=auto"},
+                             {"l", "ls -CF"},
+                             {"ls", "ls --color=auto"},
+                             {"fgrep", "fgrep --color=auto"},
+                             {"grep", "grep --color=auto"},
+                             {"la", "ls -A"},
+                             {"ll", "ls -alF"}};
+
+string prompt;
 
 char hostname[HOST_NAME_MAX];
 string username;
+
+int processCommand(string line);
+
 /**
  * getPath takes in a command (like ls) and searches for it in the path
- * directories. It returns the first executable match for that file in the order
- * defined in {_path}
+ * directories. It returns the first executable match for that file in the
+ * order defined in {_path}
  *
- * @param  {string} in : takes a string object storing the command to be run,
- * sans arguments
+ * @param  {string} in : takes a string object storing the command to be
+ * run, sans arguments
  * @return {fs::path}  : fs::path is an type in std::filesystem
  * It is functionally basically the same as a string, but has better
  * compatibility with built in filesystem functions
@@ -93,7 +106,7 @@ bool getExec(fs::path path);
  * @param  {string} in : input from user, untouched
  * @return {bool}      : returns if
  */
-void run(string in);
+void executeFile(string in);
 
 /**
  * Super simple splitter using streamstring

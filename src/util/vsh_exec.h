@@ -1,5 +1,11 @@
 #ifndef VSH_PRINTING_MODULE_H
 #define VSH_PRINTING_MODULE_H
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
+#define RESET "\033[0m"
+#define BOLDRED "\033[1m\033[31m" /* Bold Red */
 
 /**
  * vshPrint - Pretty-print the parameters that would be used to exec a command
@@ -13,8 +19,7 @@
 void vshPrint(const char *cmd_FullPath, const char *cmd,
               const char **parameters);
 
-void vshExec(const char *cmd_FullPath, const char *cmd, char **parameters);
-
-int fork(int argc, char *argv[]);
+void vshExec(int mode, std::string filename, const char *cmd_FullPath,
+             char **parameters);
 
 #endif /* VSH_PRINTING_MODULE_H */

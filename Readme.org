@@ -2,8 +2,7 @@
 Very Simple Shell
 
 * Additional Functionality:
-- Terminal colors & prompt exactly the same as bashes with username and computer
-name
+- Terminal colors & prompt exactly the same as bashes with username and computer name
 
   - To tell the diffence, run pwd. I use CASH instead of BASH
   

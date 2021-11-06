@@ -1,19 +1,33 @@
 /**
- * Very Simple SHell Part A
- *
- * This is part one of our very simple shell assignment. In this implementation,
- * we have to presenting a user input loop which runs until the user issues the
- * quit command. We need to parse the user input, check the command against
- * path, and if the command is found, return it, the path found at, and the
- * arguments in a string** to Ladd's function. This function will be implemented
- * in the following assignment
- *
+ * Very Simple SHell
+ * 
+ * I have taken part A and completed a decently feature complete shell.
+ * Base functionality has been completed, as well as: 
+ * 
+ * Terminal colors & prompt exactly the same as bashes with username and
+ * computer name
+ * 
+ * Command history, available on up arrow.
+ * 
+ * Aliasing, with a few hardcoded aliases baked in. Note, I haven't added the
+ * add alias function, but it would be trivial to do so
+ * 
+ * Tab completion is set up, but not implemented. 
+ * 
+ * Trace functionality, with lots of information.
+ * 
+ * Manual user input controls
+ * 
+ * ~ detection and expansion (this happens automatically in bash)
+ * 
+ * 
+ * 
  *
  * @author Dylan C. Morgen
  * @email morgendc203@potsdam.edu
  * @course CIS 310 Course Name
  * @assignment vsh.cpp
- * @due 10/25/2021
+ * @due 11/05/2021
  */
 
 #include <limits.h>
@@ -62,6 +76,13 @@ string prompt;
 char hostname[HOST_NAME_MAX];
 string username;
 
+/**
+ * This function handles built in functions and calls executeFile
+ * Alias functionality has been implemented here.
+ *
+ * @param  {string} line : 
+ * @return {int}         :
+ */
 int processCommand(string line);
 
 /**
@@ -100,8 +121,8 @@ fs::path getPath(string in, int index);
 bool getExec(fs::path path);
 
 /**
- * This function calls all of the other helper functions. The big cheese so to
- * speak
+ * This function calls all of the other helper functions when running a command
+ * from disk. The big cheese so to speak
  *
  * @param  {string} in : input from user, untouched
  * @return {bool}      : returns if
@@ -117,24 +138,42 @@ void executeFile(string in);
 vector<string> parse(string in);
 
 /**
+ * updates the prompt shown to the user. Hopefully this won't error out on other
+ * systems with different username and computer name variables in different
+ * places
  *
- * @return {string}  :
+ * @return {string}  : returns said prompt, with color codes baked in
  */
-string updatePath();
+string updatePrompt();
 
 /**
+ * Overloaded backspace which defaults to 1 character
  *
  */
 void backspace();
 
 /**
+ * This function deletes characters from the screen.
  *
- * @param  {int} i :
+ * @param  {int} i : how many characters to delete
  */
 void backspace(int i);
 
 /**
+ * chomper.. is going to be very hard to read. Essentially it handles all sorts
+ * of logic relating to standard text input. It captures all input, and uses
+ * ANSI escape codes to manipulate the console and cursor. Unfortunately tab
+ * completion was not implemented
  *
- * @return {string}  :
+ * @return {string}  : on EOF, return final copy of user input (by line)
  */
 string chomper();
+
+/**
+ * Restores user input to the console, provided in a string
+ *
+ * @param  {int} amount    : How many characters to restore
+ * @param  {int} index     : What index in string to restore from
+ * @param  {string} origin : String containing user input
+ */
+void restore(int amount, int index, string origin);

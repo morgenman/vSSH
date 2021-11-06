@@ -30,23 +30,26 @@ int main(int argc, char *argv[]) {
 
   username = username.erase(0, username.find_last_of("/") + 1);
 
-  prompt = updatePath();
+  prompt = updatePrompt();
   string line;
 
   printf("%s", prompt.c_str());
 
   while (true) {
     // Maaaagic
-    line = chomper();
-    // Just keep swimming
+    line = chomper();  // This is a highly customized and confusing function.
+                       // Since it was unecessary for this assignment, maybe you
+                       // can just treat it like getLine(), and ignore the lack
+                       // of documentation for it?
+
     if (line.empty()) {
       printf("%s", prompt.c_str());
       continue;
     }
-    history.push_back(line);
+    history.push_back(line);  // History implementation
     if (trace) {
-      cout << endl << "History :" << endl;
-      for (auto i : history) cout << i << endl;
+      cout << endl << "History:" << endl;
+      for (auto i : history) cout << "\t " << i << endl;
       cout << endl;
     }
 
@@ -72,7 +75,7 @@ int processCommand(string line) {
   // pipe first word to command for quit/trace logic
   entered >> cmd;  // next word
 
-  // quit/trace logic
+  // Built in functions
   if (cmd == "exit") {
     return -1;
   } else if (cmd == "trace") {
@@ -89,12 +92,9 @@ int processCommand(string line) {
       } else
         fs::current_path((fs::path)home);
 
-      prompt = updatePath();
-      // printf("%s", prompt.c_str());
-      // continue;
+      prompt = updatePrompt();
     } catch (...) {
       printf("-cash: %s: No such file or directory\n", in.c_str());
-      // continue;
     }
   } else if (cmd == "pwd") {  // NOTE: might not be necessary, /usr/bin/pwd
                               // exists on my device
@@ -148,10 +148,10 @@ fs::path getPath(string in, int index) {
 }
 
 bool getExec(fs::path path) {
-  // TODO: Explain this
+  // I found this here:
   // https://stackoverflow.com/questions/5719694/how-to-check-if-file-is-executable-in-c
   if (!access(path.c_str(), X_OK)) {
-    if (trace) printf("file is marked as executable\n");
+    if (trace) printf("file is marked as executable\n\n");
     return true;
   } else {
     if (trace) printf("file is marked as not executable\n");
@@ -211,7 +211,6 @@ void executeFile(string in) {
     // I found this implementation here:
     // https://stackoverflow.com/questions/26032039/convert-vectorstring-into-char-c
     // Essentially it's iterating over into a vector holding <char*>
-    // TODO: investigate if switching from vector<string> globally makes sense
 
     vector<char *> cstrings;
     // Preallocating memory
@@ -221,14 +220,8 @@ void executeFile(string in) {
 
     cstrings.push_back(nullptr);
 
-    // if not empty, pass through to ladd's function.
-    // For cstrings, give the address of the first element, casted to const
-    // char**
-    // This is super weird but works because we reserved memory a few lines up
-    // TODO: see if we need to deallocate that memory
     if (!cstrings.empty())
       vshExec(redir, fn, p.c_str(), cstrings.data());
-
     else
       vshExec(redir, fn, p.c_str(), args);
   }
@@ -245,7 +238,7 @@ vector<string> parse(string in) {
   return out;
 }
 
-string updatePath() {
+string updatePrompt() {
   string prompt = BOLDGREEN;
 
   prompt.append(username);
@@ -377,8 +370,9 @@ string chomper() {
           break;
         }
 
-        backspace(4);
-        restore(6, i, out + " ");
+        backspace(4);  // clear special code
+        restore(6, i,
+                out + " ");  // restore any characters potentially overwritten
         if (!buffer.empty()) {
           backspace(out.size());
           cout << buffer;
@@ -387,7 +381,6 @@ string chomper() {
         }
         break;
       default:
-
         out.insert(i, 1, c);
         i++;
         if (i < (int)out.size() - 1) {

@@ -4,17 +4,17 @@ Very Simple Shell
 * Additional Functionality:
 - Terminal colors & prompt exactly the same as bashes with username and computer name
 
-  - To tell the diffence, run pwd. I use CASH instead of BASH
+  - To tell the diffence between this and your actual shell, cd to a directory that does not exist. I use CASH instead of BASH
   
 - Command history, available on up arrow.
   
 - Aliasing, with a few hardcoded aliases baked in. Note, I haven't added the add alias function, but it would be trivial to do so
  
-- Tab completion is set up, but not implemented. 
+- Tab key is caught, but tab autocomplete is not implemented (yet). 
   
 - Trace functionality, with lots of information.
   
-- Manual user input controls
+- Manual user input controls (arrow keys, backspace, delete, enter handling)
   
 - ~ detection and expansion (this happens automatically in bash)
 
@@ -37,7 +37,7 @@ make
 .build/vssh
 #+END_SRC
 
-Documentation on site:
+Documentation for assignment:
 
 * Overview
 Write a simple /shell/ program that reads and parses lines from standard output into separate words until the user terminates the program.

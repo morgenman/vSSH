@@ -37,7 +37,9 @@ make
 .build/vssh
 #+END_SRC
 
-Documentation for assignment:
+---
+---
+# Documentation provided for assignment:
 
 * Overview
 Write a simple /shell/ program that reads and parses lines from standard output into separate words until the user terminates the program.

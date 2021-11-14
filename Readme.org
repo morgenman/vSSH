@@ -37,14 +37,13 @@ make
 .build/vssh
 #+END_SRC
 
----
----
-# Documentation provided for assignment:
+------
+* Documentation provided for assignment:
 
-* Overview
+** Overview
 Write a simple /shell/ program that reads and parses lines from standard output into separate words until the user terminates the program.
 
-* Shell Programs
+** Shell Programs
 What does a shell program do? In a loop it:
 
 - Reads and parses each line
@@ -57,26 +56,26 @@ This can, very generally, be divided into two parts: /parse/ and /execute/. In a
 
 
 
-* Very Simple SHell: VSSH-a
-** The Parser
+** Very Simple SHell: VSSH-a
+*** The Parser
 Two steps:
 - Prompt and read a full line into a string
 - Take the string apart into words
 
 (How would you do this in Java?)
-*** Prompt and Read
+**** Prompt and Read
 ~getline~ will read a line into a ~std::string~. It will evaluate as false if there is an error/EOF.
 
 http://cppreference.com (in case you were not using it) is the source for C++ documentation.
 
-*** Easy Parsing
+**** Easy Parsing
 You /can/ scan the string by character and break it up yourself. This is not *easy*.
 
 ~std::stringstream~ can be instantiated from a string and then standard reading functions (like ~>>~) can take it apart. You may want to use ~std::vector<std::string>~ since you do not know how many parameters there are to start with.
 
 You will need to take your array of paramaters and copy them into a null-terminated array (old, C-style array) of ~const char *~. The ~vshPrint~ function should be used for printing.
 
-** The Path
+*** The Path
 The first parameter on the commandline is the *command*. It names (or should name) an executable file. If the command contains the '/' character, then it is a complete name (either absolute or relative). If it does not contain the '/' then an executable with that name must be searched for in the *PATH*.
 
 Normally the PATH is an environment variable. You will be using a hardcoded path with 4 directories in it:
@@ -111,9 +110,9 @@ vssh-a: "sl" is an unknown command.
 /home/laddbc>
 #+END_SRC
 
-* C++ Library Objects:
+** C++ Library Objects:
 - =std::filesystem= has features for checking the existence of a file, directory, or device.
 - =std::stat= is a function that gives detailed status information about a file path.
   - This includes whether or not it is marked "executable" and user access rights
-* Deliverables
+** Deliverables
 Standard C++ program directory with properly commented code and a README. Explain how you tested and what output I should expect.
